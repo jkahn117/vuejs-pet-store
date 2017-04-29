@@ -1,0 +1,11 @@
+// PETS
+export const PETS_LOADED = 'PETS_LOADED'
+
+// PET
+export const PET_LOADED = 'PET_LOADED'
+export const PET_SOLD = 'PETS_SOLD'
+
+// AUTH
+export const AUTH_LOGIN_SUCCESS = 'AUTH_LOGIN_SUCCESS'
+export const AUTH_LOGIN_FAILURE = 'AUTH_LOGIN_FAILURE'
+export const AUTH_LOGOUT = 'AUTH_LOGOUT'
