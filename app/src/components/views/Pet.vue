@@ -1,14 +1,14 @@
 <template>
   <div v-if="pet">
     <div class="page-header">
-      <div class="pull-right">
-        <button class="btn btn-info">
-          <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>&nbsp;
+      <div class="pull-right" v-if="action != 'edit'">
+        <router-link :to="{ name: 'petEdit', params: { id: pet.uuid, action: 'edit' }}" class="btn btn-info">
+          <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
           Edit
-        </button>
+        </router-link>
       </div>
 
-      <h1>{{ pet.name }}</h1>
+      <h1><span v-if="action == 'edit'">Editing:</span> {{ pet.name }}</h1>
     </div>
 
     <div class="row">
@@ -16,7 +16,8 @@
         <img src="../../assets/logo.png" class="img-responsive"/>
       </div>
 
-      <div class="col-xs-6 col-sm-9" v-if="action != 'edit'">
+      <!-- details -->
+      <div class="col-xs-5 col-sm-8" v-if="action != 'edit'">
         <table class="table table-striped table-responsive">
           <tbody>
             <tr>
@@ -41,13 +42,73 @@
             </tr>
           </tbody>
         </table>
-      </div>
-    </div>
+      </div> <!-- end pet detail -->
 
-    <div class="col-xs-6 col-sm-9" v-if="action == 'edit'">
-        Edit Form
-    </div>
+      <!-- edit -->
+      <div class="col-xs-5 col-sm-8" v-else>
+        <div v-if="message" class="alert alert-danger">
+          {{message}}
+        </div>
 
+        <form v-on:submit.prevent="onSubmit" id="petForm" name="petForm">
+          <div class="form-group">
+            <label for="petName">Name</label>
+            <input :value="pet.name" placeholder="name" id="petName" name="name" class="form-control"/>
+          </div>
+
+          <div class="form-group">
+            <label for="petCategory">Category</label>
+            <select :value="pet.category" id="petCategory" name="category" class="form-control">
+              <option disabled value="">Please select one</option>
+              <option>Bird</option>
+              <option>Cat</option>
+              <option>Dog</option>
+              <option>Fish</option>
+              <option>Reptile</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="petBreed">Breed</label>
+            <input :value="pet.breed" placeholder="breed" id="petBreed" name="breed" class="form-control"/>
+          </div>
+
+          <div class="form-group">
+            <label for="petGender">Gender</label>
+            <select :value="pet.gender" id="petGender" name="gender" class="form-control">
+              <option disabled value="">Please select one</option>
+              <option>Male</option>
+              <option>Female</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="petAge">Age</label>
+            <input :value.number="pet.age" placeholder="age" id="petAge" name="age" class="form-control"/>
+          </div>
+
+          <div class="form-group">
+            <label for="petAvailable">Available?</label>
+            <select :value="pet.available" id="petAvailable" name="available" class="form-control">
+              <option disabled value="">Please select one</option>
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="petDescription">Description</label>
+            <textarea :value.trim="pet.description" placeholder="description" id="petDescription" class="form-control" rows="3" name="description"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit</button>
+          <router-link :to="{ name: 'pet', params: { id: pet.uuid }}" class="btn btn-default">
+            Cancel
+          </router-link>
+        </form>
+      </div> <!-- end edit form -->
+    </div>
   </div>
 </template>
 
@@ -55,7 +116,6 @@
   import { mapGetters } from 'vuex'
   
   export default {
-
     computed: {
       ...mapGetters({
         pet: 'currentPet'
@@ -66,8 +126,44 @@
       }
     },
 
+    data () {
+      return {
+        message: null
+      }
+    },
+
     created () {
       this.$store.dispatch('updateCurrentPet', this.$store.state.route.params.id)
+    },
+
+    methods: {
+      serializeFormData: function (formId) {
+        var o = {}
+        var a = $(`#${formId}`).serializeArray()
+
+        $.each(a, function () {
+          if (o[this.name]) {
+            if (!o[this.name].push) {
+              o[this.name] = [o[this.name]]
+            }
+            o[this.name].push(this.value || null)
+          } else {
+            o[this.name] = this.value || null
+          }
+        })
+
+        return o
+      },
+
+      onSubmit: function (e) {
+        let pet = this.serializeFormData('petForm')
+        pet['uuid'] = this.$store.state.route.params.id
+        this.$store.dispatch('updatePet', pet)
+          .then((updatedPet) => this.$router.push(`/pet/${updatedPet.uuid}`))
+          .catch((error) => {
+            this.message = error.message
+          })
+      }
     }
 
   }

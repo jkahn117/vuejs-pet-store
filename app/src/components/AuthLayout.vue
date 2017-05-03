@@ -13,9 +13,12 @@
 <script>
 import Sidebar from './shared/Sidebar.vue'
 
+import PetList from './views/PetList.vue'
+import Pet from './views/Pet.vue'
+
 export default {
   name: 'AuthLayout',
-  components: { Sidebar }
+  components: { Sidebar, PetList, Pet }
 }
 </script>
 
