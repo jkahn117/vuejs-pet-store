@@ -23,5 +23,10 @@ module.exports = {
     'generator-star-spacing': 0,
     // allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0
+  },
+  // add global variables for jQuery to pass lint
+  globals: {
+    '$': true,
+    'jQuery': true
   }
 }
