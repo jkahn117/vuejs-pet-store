@@ -13,8 +13,11 @@
   "dependencies": {
     "amazon-cognito-identity-js": "^1.16.0",
     "aws-sdk": "^2.47.0",
+    "aws4": "^1.6.0",
+    "axios": "^0.16.1",
     "bootstrap": "^3.3.7",
     "jquery": "^3.2.1",
+    "querystring-browser": "^1.0.4",
     "vue": "^2.2.6",
     "vue-router": "^2.3.1",
     "vuex": "^2.3.1",
