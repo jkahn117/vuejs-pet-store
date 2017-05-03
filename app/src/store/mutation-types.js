@@ -3,7 +3,7 @@ export const PETS_LOADED = 'PETS_LOADED'
 
 // PET
 export const PET_LOADED = 'PET_LOADED'
-export const PET_SOLD = 'PETS_SOLD'
+export const PET_UPDATED = 'PET_UPDATED'
 
 // AUTH
 export const AUTH_LOGIN_SUCCESS = 'AUTH_LOGIN_SUCCESS'

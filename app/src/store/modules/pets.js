@@ -1,4 +1,4 @@
-import shop from '../../api/shop'
+import petApi from '../../api/pets'
 import * as types from '../mutation-types'
 
 // initial state
@@ -13,28 +13,39 @@ const getters = {
   currentPet: state => state.currentPet
 }
 
-// Utility function to look for pet in local store
+// utility functions to look for pet in local store
+const indexOfPetInStore = (pet) => {
+  return state.all.findIndex((p) => p.uuid === pet.uuid)
+}
+
 const findPetInLocalStore = (id) => {
-  return state.all.find(p => p.id === id)
+  return state.all.find(p => p.uuid === id)
 }
 
 // actions
 const actions = {
+  /**
+   * Retrieve all pets from the API.
+   */
   async getAllPets ({ commit }) {
     try {
-      let pets = await shop.getPets()
+      let pets = await petApi.getPets()
       commit(types.PETS_LOADED, { pets })
+      return Promise.resolve(pets)
     } catch (error) {
       console.error(error)
+      return Promise.reject(error)
     }
   },
 
+  /**
+   * Update the pet currently being displayed in the UI.
+   */
   async updateCurrentPet ({ commit }, id) {
     try {
       let pet = findPetInLocalStore(id)
       if (!pet) {
-        console.log('pet not in local store, trying api')
-        pet = await shop.getPetById(id)
+        pet = await petApi.getPetById(id)
       }
       commit(types.PET_LOADED, { pet })
       return Promise.resolve(pet)
@@ -42,6 +53,20 @@ const actions = {
       console.error(error)
       return Promise.reject(error)
     }
+  },
+
+  /**
+   * Update pet object in API and then local store.
+   */
+  async updatePet ({ commit }, pet) {
+    return petApi.updatePet(pet)
+      .then(() => {
+        return petApi.getPetById(pet.uuid)
+      })
+      .then((updatedPet) => {
+        commit(types.PET_UPDATED, { pet: updatedPet })
+        return Promise.resolve(updatedPet)
+      })
   }
 }
 
@@ -54,14 +79,20 @@ const mutations = {
   [types.PET_LOADED] (state, { pet }) {
     state.currentPet = pet
 
-    // check if pet is already in state.all, if not add it (e.g. if loaded from API)
-    if (!state.all.find((p) => p.id === pet.id)) {
+    let index = indexOfPetInStore(pet)
+    if (index === -1) {  // pet not in array
       state.all.push(pet)
+    } else {
+      // need to use .splice() for vuex to detect changes
+      state.all.splice(index, 1, pet)
     }
   },
 
-  [types.PET_SOLD] (state, { id }) {
-    state.all.find(p => p.id === id).available = false
+  [types.PET_UPDATED] (state, { pet }) {
+    state.currentPet = pet
+
+    let index = indexOfPetInStore(pet)
+    state.all.splice(index, 1, pet)
   }
 }
 
