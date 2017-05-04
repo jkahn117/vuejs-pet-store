@@ -8,7 +8,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/">My Pet Shop</a>
+        <router-link class="navbar-brand" to="/">My Pet Shop</router-link>
       </div>
 
       <div id="navbar" class="navbar-collapse collapse">
