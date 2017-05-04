@@ -4,7 +4,6 @@
 
 export default {
   // APIs
-  petApiEndpoint: 'https://<< API_ID >>.execute-api.<< REGION >>.amazonaws.com/<< STAGE >>',
   petApiHost: '<< API_ID >>.execute-api.<< REGION >>.amazonaws.com',
   petApiRegion: '<< REGION >>',
 
