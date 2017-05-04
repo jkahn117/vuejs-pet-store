@@ -4,7 +4,7 @@
 
 import axios from 'axios'
 
-import SignedRequest from './signed-request'
+import SignedRequest from './util/signed-request'
 
 export default {
   async getPets () {

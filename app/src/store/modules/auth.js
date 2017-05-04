@@ -1,4 +1,4 @@
-import AuthService from '../../api/cognito-auth'
+import AuthService from '../../api/auth.service'
 import * as types from '../mutation-types'
 
 // initial state
@@ -44,7 +44,6 @@ const actions = {
 const mutations = {
   [types.AUTH_LOGIN_SUCCESS] (state, { user }) {
     console.log('*** LOGIN SUCCESS ***')
-    console.log(user)
     state.currentUser = user
     state.isLoggedIn = true
     state.message = null

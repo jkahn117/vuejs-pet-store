@@ -11,7 +11,7 @@ import {
   // CognitoUserSession,
   CognitoUser
 } from 'amazon-cognito-identity-js'
-import CognitoHelper from './cognito-helper'
+import CognitoHelper from './util/cognito-helper'
 
 const SUCCESS = 'authSuccess'
 const FAILURE = 'authFailure'

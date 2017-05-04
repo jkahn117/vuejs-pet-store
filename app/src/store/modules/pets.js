@@ -1,4 +1,4 @@
-import petApi from '../../api/pets'
+import petApi from '../../api/pets.service'
 import * as types from '../mutation-types'
 
 // initial state

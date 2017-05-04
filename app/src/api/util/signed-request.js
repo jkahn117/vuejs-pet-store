@@ -8,8 +8,6 @@ import aws4 from 'aws4'
 import Config from '../config'
 
 const build = (method, path, data) => {
-  console.log(AWS.config.credentials)
-
   path = path.startsWith('/') ? path : `/${path}`
 
   let request = {
