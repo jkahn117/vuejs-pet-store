@@ -13,7 +13,10 @@
 
     <div class="row">
       <div class="col-xs-6 col-sm-3">
-        <img src="../../assets/logo.png" class="img-responsive"/>
+        <img :src="pet.imageUrl || defaultImage()" class="img-responsive"/>
+        <router-link class="btn btn-info btn-xs pull-left" to="/" v-if="action == 'edit'">
+          Edit
+        </router-link>
       </div>
 
       <!-- details -->
@@ -102,10 +105,13 @@
             <textarea :value.trim="pet.description" placeholder="description" id="petDescription" class="form-control" rows="3" name="description"></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary">Submit</button>
-          <router-link :to="{ name: 'pet', params: { id: pet.uuid }}" class="btn btn-default">
-            Cancel
-          </router-link>
+          <div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <router-link :to="{ name: 'pet', params: { id: pet.uuid }}" class="btn btn-default">
+              Cancel
+            </router-link>
+            <loader id="loader"></loader>
+          </div>
         </form>
       </div> <!-- end edit form -->
     </div>
@@ -114,8 +120,12 @@
 
 <script>
   import { mapGetters } from 'vuex'
+
+  import Loader from '../shared/Loader'
   
   export default {
+    components: { Loader },
+
     computed: {
       ...mapGetters({
         pet: 'currentPet'
@@ -156,6 +166,9 @@
       },
 
       onSubmit: function (e) {
+        $('.btn').prop('disabled', true)
+        $('#loader').show()
+
         let pet = this.serializeFormData('petForm')
         pet['uuid'] = this.$store.state.route.params.id
         this.$store.dispatch('updatePet', pet)
@@ -163,6 +176,10 @@
           .catch((error) => {
             this.message = error.message
           })
+      },
+
+      defaultImage: function () {
+        return require('../../assets/logo.png')
       }
     }
 
