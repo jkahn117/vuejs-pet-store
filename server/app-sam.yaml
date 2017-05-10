@@ -6,21 +6,20 @@ Transform: "AWS::Serverless-2016-10-31"
 Description: "Simple pet shop backend using Lambda + API Gateway"
 
 Resources:
-  #
-  # API Gateway
-  #
+  ### API Gateway ###
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
       DefinitionUri: pet-shop-api.yaml
       StageName: Prod
       Variables:
-        LambdaFunctionName: !Ref LambdaFunction
+        AdminApiFunctionName: !Ref AdminApiFunction
+        SignedUrlFunctionName: !Ref SignedUrlFunction
 
   #
-  # Lambda
+  # ---------- Admin API ----------
   #
-  LambdaFunction:
+  AdminApiFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: api/
@@ -45,19 +44,17 @@ Resources:
             Path: /{proxy+}
             Method: ANY
 
-  LambdaPermission:
+  AdminApiPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
       - ApiGatewayApi
-      - LambdaFunction
+      - AdminApiFunction
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref LambdaFunction
+      FunctionName: !Ref AdminApiFunction
       Principal: apigateway.amazonaws.com
 
-  #
-  # DynamoDB Table
-  #
+  ### DynamoDB Table ###
   DDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -74,9 +71,7 @@ Resources:
         WriteCapacityUnits: 1
       TableName: "my-pet-shop"
 
-  #
-  # IAM
-  # 
+  ### IAM ###
   LambdaPetStoreRole:
     Type: AWS::IAM::Role
     Properties:
@@ -114,6 +109,98 @@ Resources:
               - "dynamodb:PutItem"
               - "dynamodb:Scan"
               - "dynamodb:UpdateItem"
+
+  #
+  # ---------- Image Processing ----------
+  #
+  ImageUploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: jkahn-my-pet-shop-image-upload
+      CorsConfiguration:
+        CorsRules:
+          - 
+            AllowedMethods: [ PUT ]
+            AllowedOrigins: ['http://localhost:8080']
+            AllowedHeaders: ['*']
+      # TODO: update allowed origins
+      # TODO: add bucket policy: https://aws.amazon.com/blogs/security/how-to-restrict-amazon-s3-bucket-access-to-a-specific-iam-role/
+
+  SignedUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: image-processor/signedurl
+      Handler: index.handler
+      Runtime: nodejs6.10
+      Role: !GetAtt SignedUrlFunctionRole.Arn
+      Environment:
+        Variables:
+          UPLOAD_BUCKET: !Ref ImageUploadBucket
+          EXPIRATION_TIME: 300
+      Events:
+        GetUrl:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGatewayApi
+            Path: /images/signedurl
+            Method: GET
+
+  SignedUrlFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: AllowLambdaServiceToAssumeRole
+            Effect: Allow
+            Action: 
+              - sts:AssumeRole
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+
+  SignedUrlFunctionPolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: SignedUrlFunctionRole
+    Properties:
+      PolicyName: LambdaPetStoreSignedUrlFunctionPolicy
+      Roles:
+        - !Ref SignedUrlFunctionRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          -
+            Effect:   "Allow"
+            Resource:
+              - !Sub arn:aws:s3:::${ImageUploadBucket}/*
+            Action:
+              - "s3:Put*"
+
+  # ImageSourceBucket:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     BucketName: jkahn-my-pet-shop-images
+
+  # StartStateMachineFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: image-processor/state-machine
+  #     Handler: index.handler
+  #     Runtime: nodejs6.10
+  #     Environment:
+  #       Variables:
+  #         STATE_MACHINE:
+  #           !Ref DDBTable
+  #     Events:
+  #       PhotoUpload:
+  #         Type: S3
+  #         Properties:
+  #           Bucket: !Ref ImageUploadBucket
+  #           Events: s3:ObjectCreated:*
 
 Outputs:
   ApiUrl:

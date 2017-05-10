@@ -14,9 +14,14 @@
     <div class="row">
       <div class="col-xs-6 col-sm-3">
         <img :src="pet.imageUrl || defaultImage()" class="img-responsive"/>
-        <router-link class="btn btn-info btn-xs pull-left" to="/" v-if="action == 'edit'">
-          Edit
-        </router-link>
+        <div v-if="action == 'edit'">
+          <button class="btn btn-info btn-xs pull-left" v-on:click="editImage" v-if="action == 'edit'">
+            Edit
+          </button>
+          <form enctype="multipart/form-data" novalidate>
+            <input type="file" id="petImageFile" accept="image/*" required />
+          </form>
+        </div>
       </div>
 
       <!-- details -->
@@ -49,8 +54,8 @@
 
       <!-- edit -->
       <div class="col-xs-5 col-sm-8" v-else>
-        <div v-if="message" class="alert alert-danger">
-          {{message}}
+        <div v-if="errorMessage" class="alert alert-danger">
+          {{errorMessage}}
         </div>
 
         <form v-on:submit.prevent="onSubmit" id="petForm" name="petForm">
@@ -122,6 +127,7 @@
   import { mapGetters } from 'vuex'
 
   import Loader from '../shared/Loader'
+  import UploadService from '../../api/fileupload.service'
   
   export default {
     components: { Loader },
@@ -138,7 +144,7 @@
 
     data () {
       return {
-        message: null
+        errorMessage: null
       }
     },
 
@@ -174,14 +180,33 @@
         this.$store.dispatch('updatePet', pet)
           .then((updatedPet) => this.$router.push(`/pet/${updatedPet.uuid}`))
           .catch((error) => {
-            this.message = error.message
+            this.errorMessage = error.message
           })
       },
 
       defaultImage: function () {
         return require('../../assets/logo.png')
+      },
+
+      editImage: function () {
+        $('#petImageFile').trigger('click').change(function () {
+          UploadService.upload($(this).prop('files')[0])
+            .then(() => {
+              console.log('photo uploaded successfully')
+            })
+            .catch(() => {
+              this.errorMessage = 'An error occured uploading the photo'
+            })
+        })
       }
     }
 
   }
 </script>
+
+<style>
+  input[type='file'] {
+    visibility: hidden;
+  }
+</style>
+
