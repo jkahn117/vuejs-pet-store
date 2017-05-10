@@ -4,11 +4,26 @@
 
 import AWS from 'aws-sdk'
 import aws4 from 'aws4'
+import querystring from 'querystring'
 
-import Config from '../config'
+import Config from '../../config'
 
-const build = (method, path, data) => {
+/**
+ * Builds a signed SigV4 request.
+ *
+ * @param  {String} method  HTTP type, e.g. GET, POST
+ * @param  {String} path    Path to resource, e.g. /pets or /items/foo
+ * @param  {Hash} qs        Hash of key-value pairs of query string parameters
+ * @param  {Hash} data      JSON body for PUT and POST requests
+ * @return {Hash}           Signed request ready for axios
+ */
+const build = (method, path, qs, data) => {
   path = path.startsWith('/') ? path : `/${path}`
+
+  // TODO add a test for empty
+  if (qs) {
+    path = `${path}?${querystring.stringify(qs)}`
+  }
 
   let request = {
     host: Config.petApiHost,

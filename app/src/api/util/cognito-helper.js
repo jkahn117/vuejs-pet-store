@@ -2,7 +2,7 @@
 // Cognito Helper
 //
 
-import Config from '../config'
+import Config from '../../config'
 
 import * as AWS from 'aws-sdk'
 import { CognitoUserPool } from 'amazon-cognito-identity-js'
