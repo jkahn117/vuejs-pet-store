@@ -6,7 +6,6 @@
   "author": "jkahn@",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.48.0",
     "aws-serverless-express": "^2.2.0",
     "body-parser": "^1.17.1",
     "compression": "^1.6.2",
