@@ -28,6 +28,7 @@ exports.handler = (event, context, callback) => {
     // Expires: process.env.EXPIRATION_TIME,
     ContentType: decodeURIComponent(fileData.type),
     ACL: 'public-read'
+    // ServerSideEncryption: 'AES256'
   }
 
   let s3 = new AWS.S3()

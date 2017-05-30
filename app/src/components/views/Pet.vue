@@ -18,6 +18,7 @@
           <button class="btn btn-info btn-xs pull-left" v-on:click="editImage" v-if="action == 'edit'">
             Edit
           </button>
+          <span class="small" id="image-upload-status"></span>
           <form enctype="multipart/form-data" novalidate>
             <input type="file" id="petImageFile" accept="image/*" required />
           </form>
@@ -190,12 +191,15 @@
 
       editImage: function () {
         $('#petImageFile').trigger('click').change(function () {
+          $('#image-upload-status').html('Uploading...')
           UploadService.upload($(this).prop('files')[0])
             .then(() => {
               console.log('photo uploaded successfully')
+              $('#image-upload-status').html('Success!')
             })
             .catch(() => {
               this.errorMessage = 'An error occured uploading the photo'
+              $('#image-upload-status').html('Error has occurred')
             })
         })
       }
